@@ -87,7 +87,7 @@ impl LicenseManager {
         let url = "https://api.gumroad.com/v2/licenses/verify";
 
         let api_success = match ureq::post(url).send_form(&[
-            ("product_permalink", "gpsSp00f"),
+            ("product_id", "1LGZL4m3EYCNJFIKnJ9pAg=="),
             ("license_key", &clean_key),
         ]) {
             Ok(resp) => {

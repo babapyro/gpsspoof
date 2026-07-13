@@ -117,7 +117,8 @@ final class LicenseManager: ObservableObject {
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         
-        let bodyParameters = "product_permalink=gpsSp00f&license_key=\(clean)"
+        let encodedKey = clean.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? clean
+        let bodyParameters = "product_id=1LGZL4m3EYCNJFIKnJ9pAg%3D%3D&license_key=\(encodedKey)"
         request.httpBody = bodyParameters.data(using: .utf8)
         
         do {

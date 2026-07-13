@@ -60,3 +60,27 @@ jobs:
           prerelease: false
           projectPath: "./LocSpoof-Tauri"
           args: ${{ matrix.args }}
+
+  build-swiftui:
+    permissions:
+      contents: write
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Xcode SwiftUI App
+        run: |
+          chmod +x ./build_dmg.sh
+          ./build_dmg.sh
+
+      - name: Upload DMG to Draft Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            LocSpoof.dmg
+          tag_name: ${{ github.ref_name }}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

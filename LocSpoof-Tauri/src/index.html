@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LocSpoof Pro - GPS Location Simulator</title>
+    <!-- Segoe UI & Outfit fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" />
+    <!-- Leaflet Mapping library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="/main.js" defer></script>
+  </head>
+
+  <body>
+    <!-- Dependency Installer Overlay -->
+    <div id="dependency-overlay" class="overlay hidden">
+      <div class="overlay-card glass animate-fade-in">
+        <div class="logo-spinner"></div>
+        <h2 class="fluent-title">Zero-Touch Onboarding</h2>
+        <p class="fluent-subtitle" id="dep-subtitle">Setting up GPS simulation environment...</p>
+        
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="dep-progress-bar" style="width: 0%"></div>
+        </div>
+        <p class="progress-label" id="dep-progress-label">Checking requirements... 0%</p>
+        
+        <div class="console-log-box" id="dep-console-log">
+          <div class="log-line text-info">Starting LocSpoof dependencies verify...</div>
+        </div>
+
+        <div class="overlay-actions hidden" id="dep-error-actions">
+          <button class="fluent-button btn-primary" id="btn-dep-retry">Retry Setup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- License Activation Modal -->
+    <div id="license-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card glass animate-slide-up">
+        <button class="modal-close" id="btn-close-license">&times;</button>
+        <div class="modal-header">
+          <div class="badge premium-badge">PRO</div>
+          <h2 class="fluent-title">Activate LocSpoof Pro</h2>
+          <p class="fluent-subtitle">Enter your key to unlock premium features.</p>
+        </div>
+
+        <div class="modal-body">
+          <div class="license-status-card" id="modal-license-status">
+            Status: <span class="status-badge unlicensed">Trial Mode</span>
+          </div>
+
+          <div class="input-group">
+            <label for="license-key-input">License Key</label>
+            <input type="text" id="license-key-input" placeholder="XXXX-XXXX-XXXX-XXXX" />
+          </div>
+
+          <div class="error-text hidden" id="license-error-msg">Invalid checksum.</div>
+
+          <div class="modal-actions">
+            <button class="fluent-button btn-secondary" id="btn-start-trial">Activate Free Trial</button>
+            <button class="fluent-button btn-primary" id="btn-submit-license">Activate Pro</button>
+          </div>
+
+          <div class="deactivate-section hidden" id="deactivate-section">
+            <p>You have activated LocSpoof Pro on this device.</p>
+            <button class="fluent-button btn-danger" id="btn-deactivate">Deactivate License</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Premium Gate Modal (Upgrade prompt) -->
+    <div id="premium-gate-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card glass upgrade-card animate-scale-up">
+        <button class="modal-close" id="btn-close-upgrade">&times;</button>
+        <div class="upgrade-glow"></div>
+        <div class="upgrade-header">
+          <div class="lock-icon-large">🔒</div>
+          <h2 class="fluent-title grade-text">Unlock LocSpoof Pro</h2>
+          <p class="fluent-subtitle">Monetize premium path simulation, route looping, and joystick controls.</p>
+        </div>
+
+        <div class="upgrade-body">
+          <div class="feature-grid">
+            <div class="feature-item">
+              <span class="feat-icon">🗺️</span>
+              <div class="feat-text">
+                <h3>Route Simulation</h3>
+                <p>Simulate walking, cycling, or driving routes with customizable speed controls.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <span class="feat-icon">🕹️</span>
+              <div class="feat-text">
+                <h3>Real-Time Joystick</h3>
+                <p>Manually steer your device coordinates using custom keyboard arrows / joystick.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <span class="feat-icon">📂</span>
+              <div class="feat-text">
+                <h3>GPX Import & Export</h3>
+                <p>Import GPX files to test geolocations, geo-fencing, and location routes.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="upgrade-pricing">
+            <div class="price-box">
+              <span class="currency">$</span>
+              <span class="price-val">19</span>
+              <span class="period">/ lifetime</span>
+            </div>
+            <p class="price-sub">Zero-Touch environment support, iOS and Android multiplatform included.</p>
+          </div>
+
+          <div class="modal-actions">
+            <button class="fluent-button btn-secondary" id="btn-upgrade-license">I Have a License Key</button>
+            <a href="https://gum.co/gpsSp00f" target="_blank" class="fluent-button btn-primary btn-cta">Upgrade to Pro Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Desktop Layout -->
+    <div class="app-layout">
+      <!-- Left Control Panel (Sidebar) -->
+      <aside class="sidebar glass">
+        <header class="sidebar-header">
+          <div class="brand">
+            <span class="brand-logo">🌐</span>
+            <div class="brand-text">
+              <h1 class="brand-title">LocSpoof</h1>
+              <div class="badge free-badge" id="app-tier-badge">TRIAL</div>
+            </div>
+          </div>
+          <button class="fluent-icon-button" id="btn-license-settings" title="License Settings">🔑</button>
+        </header>
+
+        <section class="sidebar-content">
+          <!-- OS Segmented Selector -->
+          <div class="segmented-control">
+            <button class="segment active" id="segment-ios">
+              <span class="os-icon">🍎</span> iOS
+            </button>
+            <button class="segment" id="segment-android">
+              <span class="os-icon">🤖</span> Android
+            </button>
+          </div>
+
+          <!-- Device Disovery Section -->
+          <div class="card bg-card">
+            <div class="card-header">
+              <h3>Target Device</h3>
+              <button class="fluent-button-small" id="btn-scan">Scan</button>
+            </div>
+            <div class="device-select-container">
+              <select id="device-select">
+                <option value="">No device detected...</option>
+              </select>
+              <div class="loader-inline hidden" id="scan-loader"></div>
+            </div>
+            <div class="status-indicator" id="device-status-indicator">
+              <span class="status-dot dot-red"></span>
+              <span id="device-status-text">Disconnected</span>
+            </div>
+          </div>
+
+          <!-- Anti-Detection Security -->
+          <div class="card bg-card">
+            <div class="toggle-row">
+              <div class="toggle-label">
+                <h3>Anti-Detection Jitter</h3>
+                <p>Adds micro-meters coordinate shifts to spoof detection engines.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="chk-anti-detection" checked />
+                <span class="slider-round"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Features Section -->
+          <div class="features-accordion">
+            
+            <!-- Feature 1: Teleport (FREE) -->
+            <div class="feature-box active" id="feat-teleport">
+              <div class="feature-box-header">
+                <h3>📍 Teleport Location</h3>
+                <span class="status-pill free">FREE</span>
+              </div>
+              <div class="feature-box-content">
+                <p class="description">Select a point on the map and teleport instantly.</p>
+                <div class="coordinate-display">
+                  <div class="coord-val">Lat: <span id="teleport-lat">37.774900</span></div>
+                  <div class="coord-val">Lng: <span id="teleport-lng">-122.419400</span></div>
+                </div>
+                <button class="fluent-button btn-primary w-full" id="btn-teleport-execute">Teleport Location</button>
+              </div>
+            </div>
+
+            <!-- Feature 2: Route Simulation (PREMIUM) -->
+            <div class="feature-box locked" id="feat-route">
+              <div class="feature-box-header">
+                <h3>🚶 Route Simulation</h3>
+                <span class="status-pill lock-pill">🔒 PRO</span>
+              </div>
+              <div class="feature-box-content">
+                <p class="description">Draw multi-point coordinates on the map to walk along a path.</p>
+                
+                <div class="route-point-count">Waypoints: <span id="waypoint-count">0</span></div>
+
+                <div class="slider-group">
+                  <div class="slider-header">
+                    <span>Movement Speed</span>
+                    <span id="speed-label">12 km/h</span>
+                  </div>
+                  <input type="range" id="speed-slider" min="1" max="120" value="12" />
+                </div>
+
+                <div class="button-row">
+                  <button class="fluent-button btn-secondary flex-1" id="btn-route-clear">Clear Path</button>
+                  <button class="fluent-button btn-primary flex-1" id="btn-route-start">Start Route</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Feature 3: Real-Time Joystick (PREMIUM) -->
+            <div class="feature-box locked" id="feat-joystick">
+              <div class="feature-box-header">
+                <h3>🕹️ Real-Time Joystick</h3>
+                <span class="status-pill lock-pill">🔒 PRO</span>
+              </div>
+              <div class="feature-box-content">
+                <p class="description">Control coordinates on-the-fly with standard keyboard WASD / Arrows.</p>
+                <div class="joystick-pad-container">
+                  <div class="joystick-ring">
+                    <div class="joystick-handle" id="joystick-handle-el"></div>
+                  </div>
+                  <div class="joystick-keyboard-hints">
+                    <div>W / ↑</div>
+                    <div>A / ← &nbsp;&nbsp; S / ↓ &nbsp;&nbsp; D / →</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Feature 4: GPX Import (PREMIUM) -->
+            <div class="feature-box locked" id="feat-gpx">
+              <div class="feature-box-header">
+                <h3>📂 GPX File Import</h3>
+                <span class="status-pill lock-pill">🔒 PRO</span>
+              </div>
+              <div class="feature-box-content">
+                <p class="description">Upload .gpx files containing tracks or routes.</p>
+                <button class="fluent-button btn-secondary w-full" id="btn-gpx-upload">Upload GPX File</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Location Reset -->
+          <button class="fluent-button btn-secondary w-full reset-margin" id="btn-reset-location">Reset Device to Real GPS</button>
+        </section>
+
+        <!-- Sidebar Footer -->
+        <footer class="sidebar-footer">
+          <div class="log-console-toggle" id="btn-toggle-log-panel">
+            <span>⚙️ Diagnostic Console Log</span>
+            <span id="log-panel-indicator">▲</span>
+          </div>
+          <div class="collapsible-console hidden" id="console-log-panel">
+            <div class="console-body" id="app-console-log">
+              <div class="log-line text-muted">Awaiting connection events...</div>
+            </div>
+            <button class="fluent-button-small w-full" id="btn-clear-console-logs">Clear Logs</button>
+          </div>
+        </footer>
+      </aside>
+
+      <!-- Right Mapping Panel -->
+      <main class="map-container">
+        <!-- Search bar over Leaflet map -->
+        <div class="map-search-bar-container">
+          <input type="text" id="map-search-input" placeholder="Search coordinates, city or place..." />
+          <button id="btn-map-search">🔍</button>
+        </div>
+        
+        <!-- The leaflet map DOM -->
+        <div id="map"></div>
+      </main>
+    </div>
+
+    <!-- Alert / Toast Toast System for Errors -->
+    <div id="toast-container" class="toast-container"></div>
+  </body>
+</html>

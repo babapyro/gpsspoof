@@ -1,0 +1,62 @@
+name: "Release LocSpoof Pro"
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # for macOS DMG
+            args: "--target universal-apple-darwin"
+          - platform: "windows-latest" # for Windows EXE/MSI
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Target for universal macOS binary if building on macOS
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./LocSpoof-Tauri/src-tauri -> target"
+
+      - name: Install frontend dependencies
+        run: |
+          cd LocSpoof-Tauri
+          npm install
+
+      - name: Build Tauri App & Publish Release
+        uses: tauri-apps/tauri-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__ # tauri-action will replace this with package.json version
+          releaseName: "LocSpoof Pro v__VERSION__"
+          releaseDraft: true
+          prerelease: false
+          projectPath: "./LocSpoof-Tauri"
+          args: ${{ matrix.args }}

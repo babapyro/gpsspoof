@@ -1,0 +1,9 @@
+.DS_Store
+buildClean/
+dmg_temp/
+*.dmg
+LocSpoof-Tauri/node_modules/
+LocSpoof-Tauri/src-tauri/target/
+LocSpoof-Tauri/LocSpoofPro.exe
+LocSpoof-Tauri/dist/
+*.exe

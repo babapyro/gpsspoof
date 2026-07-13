@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 
-# Point to full Xcode instance for xcodebuild
-export DEVELOPER_DIR="/Users/cagan/Downloads/Xcode-beta.app/Contents/Developer"
+# Point to full Xcode instance for xcodebuild if it exists locally
+if [ -d "/Users/cagan/Downloads/Xcode-beta.app" ]; then
+    export DEVELOPER_DIR="/Users/cagan/Downloads/Xcode-beta.app/Contents/Developer"
+fi
 
 echo "=== 1. Cleaning build folders ==="
 rm -rf ./buildClean
